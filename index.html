@@ -761,6 +761,10 @@
     inspo.style.display = "block";
     if (completionState[CONFIG.videos[CONFIG.videos.length - 1].title]) {
       inspo.classList.remove("inspo-locked");
+      const banner = document.getElementById("inspo-lock-banner");
+      if (banner) banner.style.display = "none";
+      const badge = document.getElementById("inspo-badge");
+      if (badge) badge.textContent = "🎬 Unlocked";
     } else {
       inspo.classList.add("inspo-locked");
     }
