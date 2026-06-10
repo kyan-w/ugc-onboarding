@@ -157,8 +157,9 @@
 
     .video-wrapper {
       position: relative;
-      padding-bottom: 56.25%;
-      background: #0f0f13;
+      padding-bottom: 177.78%; /* 9:16 portrait */
+      background: #000;
+      overflow: hidden;
     }
     .video-wrapper iframe,
     .video-wrapper video {
@@ -166,6 +167,7 @@
       top: 0; left: 0;
       width: 100%; height: 100%;
       border: none;
+      object-fit: cover;
     }
     .video-placeholder {
       position: absolute;
