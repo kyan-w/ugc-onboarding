@@ -760,6 +760,7 @@
         const nextLbl = document.getElementById("watch-label-" + next);
         if (nextLbl) nextLbl.innerHTML = "<strong>0%</strong> watched";
         if (CONFIG.videos[next].type === "youtube") initYTPlayers();
+        if (CONFIG.videos[next].type === "upload") attachHtml5Listeners(next);
       }
     }
 
