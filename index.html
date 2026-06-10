@@ -796,10 +796,11 @@
   }
 
   function showCompletion() {
-    document.getElementById("main").style.display = "none";
-    document.getElementById("completion").style.display = "block";
-    document.getElementById("completion-msg").innerHTML =
-      `<strong>${currentCreator}</strong> — you've watched all four training videos.<br>We'll be in touch with your first brief soon.`;
+    const banner = document.getElementById("completion-banner");
+    banner.style.display = "flex";
+    document.getElementById("completion-msg").textContent =
+      currentCreator + " — you've watched all four training videos. We'll be in touch with your first brief soon.";
+    banner.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   // ── Persistence ────────────────────────────────────
