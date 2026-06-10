@@ -180,6 +180,27 @@
     .video-placeholder svg { width: 48px; height: 48px; opacity: .3; }
     .video-placeholder span { font-size: 13px; }
 
+    /* ── Lock overlay ── */
+    .lock-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #0f0f13ee;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 12px;
+      z-index: 10;
+    }
+    .lock-overlay .lock-icon {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: #ffffff10;
+      border: 2px solid #ffffff20;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .lock-overlay .lock-icon svg { width: 28px; height: 28px; color: #9090b0; }
+    .lock-overlay span { font-size: 13px; color: #9090b0; }
+    .video-card.locked { opacity: .7; }
+
     .card-footer {
       padding: 14px 22px;
       display: flex;
@@ -285,16 +306,16 @@
         src: "videos/video1.mp4"
       },
       {
-        title: "Video 2 — Content Guidelines",
-        description: "Style, tone, and brand standards",
-        type: "upload",
-        src: "videos/video2.mp4"
-      },
-      {
-        title: "Video 3 — Shoot & Edit Tips",
+        title: "Video 2 — Shoot & Edit Tips",
         description: "Technical requirements and best practices",
         type: "upload",
         src: "videos/video3.mp4"
+      },
+      {
+        title: "Video 3 — Content Guidelines",
+        description: "Style, tone, and brand standards",
+        type: "upload",
+        src: "videos/video2.mp4"
       },
       {
         title: "Video 4 — Submission Process",
@@ -337,15 +358,23 @@
   }
 
   // ── Build video cards ──────────────────────────────
+  function isUnlocked(i) {
+    if (i === 0) return true;
+    return !!completionState[CONFIG.videos[i - 1].title];
+  }
+
   function buildGrid() {
     const grid = document.getElementById("video-grid");
     grid.innerHTML = "";
 
     CONFIG.videos.forEach((vid, i) => {
-      const done = !!completionState[vid.title];
+      const done     = !!completionState[vid.title];
+      const unlocked = isUnlocked(i);
       const card = document.createElement("div");
-      card.className = "video-card" + (done ? " completed" : (i === 0 ? " active" : ""));
+      card.className = "video-card" + (done ? " completed" : (!unlocked ? " locked" : " active"));
       card.id = "card-" + i;
+
+      const chipText = done ? "Done" : (!unlocked ? "Locked" : "Watching");
 
       card.innerHTML = `
         <div class="card-header">
@@ -354,20 +383,33 @@
             <h2>${vid.title}</h2>
             <p>${vid.description}</p>
           </div>
-          <span class="status-chip">${done ? "Done" : (i === 0 ? "Watching" : "Pending")}</span>
+          <span class="status-chip">${chipText}</span>
         </div>
         <div class="video-wrapper" id="wrapper-${i}">
-          ${buildPlayer(vid, i)}
+          ${unlocked ? buildPlayer(vid, i) : lockOverlay(i)}
         </div>
         <div class="card-footer">
           <div class="watch-progress" id="watch-label-${i}">
-            ${done ? '<strong>Watched</strong>' : '<strong>0%</strong> watched'}
+            ${done ? '<strong>Watched</strong>' : (unlocked ? '<strong>0%</strong> watched' : '<span>Complete the previous video to unlock</span>')}
           </div>
           ${done ? completedIndicator() : '<span id="tick-' + i + '"></span>'}
         </div>`;
 
       grid.appendChild(card);
     });
+  }
+
+  function lockOverlay(i) {
+    const prevTitle = CONFIG.videos[i - 1].title;
+    return `<div class="lock-overlay">
+      <div class="lock-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <span>Finish Video ${i} to unlock</span>
+    </div>`;
   }
 
   function completedIndicator() {
@@ -480,6 +522,21 @@
       if (lbl) lbl.innerHTML = "<strong>Watched</strong>";
       const tick = document.getElementById("tick-" + i);
       if (tick) tick.outerHTML = completedIndicator();
+    }
+
+    // Unlock next video
+    const next = i + 1;
+    if (next < CONFIG.videos.length) {
+      const nextCard = document.getElementById("card-" + next);
+      if (nextCard) {
+        nextCard.className = "video-card active";
+        nextCard.querySelector(".status-chip").textContent = "Watching";
+        const wrapper = document.getElementById("wrapper-" + next);
+        if (wrapper) wrapper.innerHTML = buildPlayer(CONFIG.videos[next], next);
+        const nextLbl = document.getElementById("watch-label-" + next);
+        if (nextLbl) nextLbl.innerHTML = "<strong>0%</strong> watched";
+        if (CONFIG.videos[next].type === "youtube") initYTPlayers();
+      }
     }
 
     updateProgress();
