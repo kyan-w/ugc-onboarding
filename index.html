@@ -625,11 +625,8 @@
     if (vid.type === "youtube") {
       return `<div id="yt-player-${i}"></div>`;
     }
-    return `<video id="html5-${i}" controls controlsList="nodownload nofullscreen" oncontextmenu="return false"
-        style="position:absolute;top:0;left:0;width:100%;height:100%;background:#000;"
-        ontimeupdate="html5Progress(${i}, this)"
-        onseeking="html5PreventSkip(${i}, this)"
-        onended="markComplete(${i})">
+    return `<video id="html5-${i}" controls controlsList="nodownload" oncontextmenu="return false"
+        style="position:absolute;top:0;left:0;width:100%;height:100%;background:#000;object-fit:cover;">
       <source src="${vid.src}">
     </video>`;
   }
