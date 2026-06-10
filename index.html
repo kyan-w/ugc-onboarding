@@ -497,6 +497,10 @@
   }
 
   function startSession() {
+    // ?reset=true clears this creator's progress
+    if (params.get("reset") === "true") {
+      localStorage.removeItem("ugc_progress_" + currentCreator);
+    }
     const saved = localStorage.getItem("ugc_progress_" + currentCreator);
     window.completionState = saved ? JSON.parse(saved) : {};
 
