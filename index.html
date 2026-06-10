@@ -700,6 +700,10 @@
     const pct  = Math.round((done / CONFIG.videos.length) * 100);
     document.getElementById("progress-fill").style.width = pct + "%";
     document.getElementById("progress-label").textContent = done + " of " + CONFIG.videos.length + " videos completed";
+    // Unlock inspo library after video 4
+    if (completionState[CONFIG.videos[CONFIG.videos.length - 1].title]) {
+      document.getElementById("inspo-section").style.display = "block";
+    }
     if (done === CONFIG.videos.length) setTimeout(showCompletion, 800);
   }
 
