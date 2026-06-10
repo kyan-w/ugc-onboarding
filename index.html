@@ -646,12 +646,22 @@
     }
   }
 
-  // ── HTML5 video progress ───────────────────────────
+  // ── HTML5 video progress & skip prevention ────────
+  const maxWatched = {};
+
   function html5Progress(i, el) {
     if (!el.duration) return;
     const pct = Math.round((el.currentTime / el.duration) * 100);
+    if (!maxWatched[i] || el.currentTime > maxWatched[i]) maxWatched[i] = el.currentTime;
     updateWatchLabel(i, pct);
     if (pct >= 95) markComplete(i);
+  }
+
+  function html5PreventSkip(i, el) {
+    const max = maxWatched[i] || 0;
+    if (el.currentTime > max + 2) {
+      el.currentTime = max;
+    }
   }
 
   function updateWatchLabel(i, pct) {
