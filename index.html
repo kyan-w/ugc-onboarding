@@ -588,6 +588,9 @@
         </div>`;
 
       grid.appendChild(card);
+      if (CONFIG.videos[i].type === "upload" && isUnlocked(i) && !done) {
+        attachHtml5Listeners(i);
+      }
     });
   }
 
