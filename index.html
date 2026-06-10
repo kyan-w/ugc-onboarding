@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UGC Creator Onboarding</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f0f13;
+      color: #e8e8f0;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      padding: 48px 24px 40px;
+      text-align: center;
+      border-bottom: 1px solid #ffffff18;
+    }
+    header .logo {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #7c83ff;
+      margin-bottom: 12px;
+    }
+    header h1 {
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 700;
+      background: linear-gradient(90deg, #fff 0%, #a0a8ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
+    }
+    header p {
+      margin-top: 14px;
+      color: #9090b0;
+      font-size: 16px;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* ── Invalid link screen ── */
+    #invalid {
+      display: none;
+      max-width: 460px;
+      margin: 80px auto;
+      padding: 0 24px;
+      text-align: center;
+    }
+    .invalid-icon {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: #ff4d4d18;
+      border: 2px solid #ff4d4d40;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 24px;
+      font-size: 32px;
+    }
+    #invalid h2 { font-size: 22px; margin-bottom: 10px; }
+    #invalid p  { color: #9090b0; font-size: 15px; line-height: 1.6; }
+
+    /* ── Main content ── */
+    #main { display: none; max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    .welcome-bar {
+      background: #1c1c2e;
+      border: 1px solid #ffffff12;
+      border-radius: 12px;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 36px;
+    }
+    .welcome-bar .avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #7c83ff, #5b63d3);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 18px; flex-shrink: 0;
+    }
+    .welcome-bar .info { flex: 1; }
+    .welcome-bar .info strong { display: block; font-size: 16px; }
+    .welcome-bar .info span   { font-size: 13px; color: #9090b0; }
+
+    /* Progress bar */
+    .progress-section { margin-bottom: 36px; }
+    .progress-section h3 { font-size: 13px; letter-spacing: 2px; text-transform: uppercase; color: #9090b0; margin-bottom: 10px; }
+    .progress-track {
+      background: #1c1c2e;
+      border-radius: 8px;
+      height: 10px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #7c83ff, #5b63d3);
+      transition: width .6s ease;
+      width: 0%;
+    }
+    .progress-label { margin-top: 8px; font-size: 13px; color: #9090b0; }
+
+    /* Video grid */
+    .video-grid { display: grid; grid-template-columns: 1fr; gap: 28px; }
+
+    .video-card {
+      background: #1c1c2e;
+      border: 1px solid #ffffff12;
+      border-radius: 16px;
+      overflow: hidden;
+      transition: border-color .3s;
+    }
+    .video-card.completed { border-color: #4ade80; }
+    .video-card.active    { border-color: #7c83ff; }
+
+    .card-header {
+      padding: 18px 22px 14px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .step-badge {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: #ffffff10;
+      border: 2px solid #ffffff20;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 14px; flex-shrink: 0;
+    }
+    .video-card.completed .step-badge {
+      background: #4ade8020;
+      border-color: #4ade80;
+      color: #4ade80;
+    }
+    .card-header-info { flex: 1; }
+    .card-header-info h2 { font-size: 17px; font-weight: 600; }
+    .card-header-info p  { font-size: 13px; color: #9090b0; margin-top: 2px; }
+    .status-chip {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #ffffff10;
+      color: #9090b0;
+    }
+    .video-card.completed .status-chip { background: #4ade8020; color: #4ade80; }
+    .video-card.active    .status-chip { background: #7c83ff20; color: #a0a8ff; }
+
+    .video-wrapper {
+      position: relative;
+      padding-bottom: 56.25%;
+      background: #0f0f13;
+    }
+    .video-wrapper iframe,
+    .video-wrapper video {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      border: none;
+    }
+    .video-placeholder {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 10px;
+      color: #ffffff30;
+      font-size: 14px;
+      background: #0f0f13;
+    }
+    .video-placeholder svg { width: 48px; height: 48px; opacity: .3; }
+    .video-placeholder span { font-size: 13px; }
+
+    .card-footer {
+      padding: 14px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid #ffffff08;
+    }
+    .watch-progress { font-size: 13px; color: #9090b0; }
+    .watch-progress strong { color: #e8e8f0; }
+    .complete-indicator {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 600;
+      color: #4ade80;
+    }
+    .complete-indicator svg { width: 18px; height: 18px; }
+
+    /* ── Completion screen ── */
+    #completion {
+      display: none;
+      text-align: center;
+      padding: 80px 24px;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+    #completion .big-check {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: #4ade8020;
+      border: 2px solid #4ade80;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 28px;
+    }
+    #completion .big-check svg { width: 40px; height: 40px; color: #4ade80; }
+    #completion h2 { font-size: 32px; margin-bottom: 12px; }
+    #completion p  { color: #9090b0; font-size: 16px; line-height: 1.6; }
+
+    @media (min-width: 640px) {
+      .video-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">UGC Creator Program</div>
+  <h1>Creator Onboarding Portal</h1>
+  <p>Watch all four training videos in full to complete your onboarding.</p>
+</header>
+
+<!-- Invalid / missing link screen -->
+<div id="invalid">
+  <div class="invalid-icon">🔗</div>
+  <h2>Invalid Link</h2>
+  <p>This link doesn't have a creator name attached.<br>Please use the personal link that was sent to you, or contact us to get your link resent.</p>
+</div>
+
+<!-- Main content -->
+<div id="main">
+  <div class="welcome-bar">
+    <div class="avatar" id="avatar-initial">?</div>
+    <div class="info">
+      <strong id="greeting-name">Hello!</strong>
+      <span>Complete all 4 training videos below to finish onboarding.</span>
+    </div>
+  </div>
+
+  <div class="progress-section">
+    <h3>Overall Progress</h3>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-label" id="progress-label">0 of 4 videos completed</div>
+  </div>
+
+  <div class="video-grid" id="video-grid"></div>
+</div>
+
+<!-- All done screen -->
+<div id="completion">
+  <div class="big-check">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  </div>
+  <h2>Onboarding Complete!</h2>
+  <p id="completion-msg"></p>
+</div>
+
+<!-- ── Configuration — only edit this block ── -->
+<script>
+  // ===================================================
+  // CONFIGURATION
+  // ===================================================
+  const CONFIG = {
+    // Your 4 training videos.
+    // type: "youtube" → paste just the video ID from the YouTube URL (?v=XXXXX)
+    // type: "upload"  → paste a direct URL to the video file (.mp4 etc.)
+    videos: [
+      {
+        title: "Video 1 — Program Overview",
+        description: "What UGC is and how our program works",
+        type: "upload",
+        src: "videos/video1.mp4"
+      },
+      {
+        title: "Video 2 — Content Guidelines",
+        description: "Style, tone, and brand standards",
+        type: "upload",
+        src: "videos/video2.mp4"
+      },
+      {
+        title: "Video 3 — Shoot & Edit Tips",
+        description: "Technical requirements and best practices",
+        type: "upload",
+        src: "videos/video3.mp4"
+      },
+      {
+        title: "Video 4 — Submission Process",
+        description: "How to submit content and get paid",
+        type: "upload",
+        src: "videos/video4.mp4"
+      }
+    ],
+
+    // Google Apps Script web app URL (see SETUP.md for instructions)
+    // Leave as "" to skip remote tracking — progress still saves locally
+    trackingUrl: "https://script.google.com/macros/s/AKfycbz6PWdTPPZca6Ohh4HWgnFP57WeDju9vFlBhzVpms1EpNXrDSp0ETaqBoclFdWQwr5Q/exec"
+  };
+  // ===================================================
+</script>
+
+<script>
+  // ── Boot: read name from URL, no login needed ──────
+  const params      = new URLSearchParams(location.search);
+  const rawName     = params.get("creator") || "";
+  const currentCreator = rawName.trim();
+
+  if (!currentCreator) {
+    document.getElementById("invalid").style.display = "block";
+  } else {
+    startSession();
+  }
+
+  function startSession() {
+    const saved = localStorage.getItem("ugc_progress_" + currentCreator);
+    window.completionState = saved ? JSON.parse(saved) : {};
+
+    document.getElementById("main").style.display = "block";
+    document.getElementById("greeting-name").textContent = "Hi, " + currentCreator + "!";
+    document.getElementById("avatar-initial").textContent = currentCreator.charAt(0).toUpperCase();
+
+    buildGrid();
+    updateProgress();
+    loadYouTubeAPI();
+  }
+
+  // ── Build video cards ──────────────────────────────
+  function buildGrid() {
+    const grid = document.getElementById("video-grid");
+    grid.innerHTML = "";
+
+    CONFIG.videos.forEach((vid, i) => {
+      const done = !!completionState[vid.title];
+      const card = document.createElement("div");
+      card.className = "video-card" + (done ? " completed" : (i === 0 ? " active" : ""));
+      card.id = "card-" + i;
+
+      card.innerHTML = `
+        <div class="card-header">
+          <div class="step-badge">${done ? "✓" : (i + 1)}</div>
+          <div class="card-header-info">
+            <h2>${vid.title}</h2>
+            <p>${vid.description}</p>
+          </div>
+          <span class="status-chip">${done ? "Done" : (i === 0 ? "Watching" : "Pending")}</span>
+        </div>
+        <div class="video-wrapper" id="wrapper-${i}">
+          ${buildPlayer(vid, i)}
+        </div>
+        <div class="card-footer">
+          <div class="watch-progress" id="watch-label-${i}">
+            ${done ? '<strong>Watched</strong>' : '<strong>0%</strong> watched'}
+          </div>
+          ${done ? completedIndicator() : '<span id="tick-' + i + '"></span>'}
+        </div>`;
+
+      grid.appendChild(card);
+    });
+  }
+
+  function completedIndicator() {
+    return `<div class="complete-indicator">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      Completed
+    </div>`;
+  }
+
+  function buildPlayer(vid, i) {
+    if (!vid.src || vid.src === "VIDEO_ID_HERE") {
+      return `<div class="video-placeholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="5 3 19 12 5 21 5 3"/>
+        </svg>
+        <span>Video will appear here once configured</span>
+      </div>`;
+    }
+    if (vid.type === "youtube") {
+      return `<div id="yt-player-${i}"></div>`;
+    }
+    return `<video id="html5-${i}" controls controlsList="nodownload" oncontextmenu="return false"
+        style="position:absolute;top:0;left:0;width:100%;height:100%;background:#000;"
+        ontimeupdate="html5Progress(${i}, this)"
+        onended="markComplete(${i})">
+      <source src="${vid.src}">
+    </video>`;
+  }
+
+  // ── YouTube API ────────────────────────────────────
+  const ytPlayers = {};
+
+  function loadYouTubeAPI() {
+    const needsYT = CONFIG.videos.some(v => v.type === "youtube" && v.src && v.src !== "VIDEO_ID_HERE");
+    if (!needsYT) return;
+    if (window.YT && window.YT.Player) { initYTPlayers(); return; }
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+  }
+
+  window.onYouTubeIframeAPIReady = function () { initYTPlayers(); };
+
+  function initYTPlayers() {
+    CONFIG.videos.forEach((vid, i) => {
+      if (vid.type !== "youtube" || !vid.src || vid.src === "VIDEO_ID_HERE") return;
+      if (completionState[vid.title]) return;
+
+      ytPlayers[i] = new YT.Player("yt-player-" + i, {
+        videoId: vid.src,
+        playerVars: { rel: 0, modestbranding: 1, controls: 1 },
+        events: { onStateChange: (e) => onYTStateChange(e, i) }
+      });
+    });
+  }
+
+  function onYTStateChange(event, i) {
+    const player = ytPlayers[i];
+    if (!player) return;
+    if (event.data === YT.PlayerState.ENDED) { markComplete(i); return; }
+    if (event.data === YT.PlayerState.PLAYING) {
+      (function poll() {
+        if (!ytPlayers[i]) return;
+        try {
+          const duration = player.getDuration();
+          const current  = player.getCurrentTime();
+          if (duration > 0) {
+            const pct = Math.round((current / duration) * 100);
+            updateWatchLabel(i, pct);
+            if (pct >= 95) { markComplete(i); return; }
+          }
+          if (player.getPlayerState() === YT.PlayerState.PLAYING) setTimeout(poll, 1500);
+        } catch(e) {}
+      })();
+    }
+  }
+
+  // ── HTML5 video progress ───────────────────────────
+  function html5Progress(i, el) {
+    if (!el.duration) return;
+    const pct = Math.round((el.currentTime / el.duration) * 100);
+    updateWatchLabel(i, pct);
+    if (pct >= 95) markComplete(i);
+  }
+
+  function updateWatchLabel(i, pct) {
+    const lbl = document.getElementById("watch-label-" + i);
+    if (lbl && !completionState[CONFIG.videos[i].title]) {
+      lbl.innerHTML = `<strong>${pct}%</strong> watched`;
+    }
+  }
+
+  // ── Mark video complete ────────────────────────────
+  function markComplete(i) {
+    const vid = CONFIG.videos[i];
+    if (completionState[vid.title]) return;
+
+    completionState[vid.title] = true;
+    saveProgress();
+    sendTracking(vid.title);
+
+    const card = document.getElementById("card-" + i);
+    if (card) {
+      card.className = "video-card completed";
+      card.querySelector(".step-badge").textContent = "✓";
+      card.querySelector(".status-chip").textContent = "Done";
+      const lbl = document.getElementById("watch-label-" + i);
+      if (lbl) lbl.innerHTML = "<strong>Watched</strong>";
+      const tick = document.getElementById("tick-" + i);
+      if (tick) tick.outerHTML = completedIndicator();
+    }
+
+    updateProgress();
+  }
+
+  // ── Progress ───────────────────────────────────────
+  function updateProgress() {
+    const done = CONFIG.videos.filter(v => completionState[v.title]).length;
+    const pct  = Math.round((done / CONFIG.videos.length) * 100);
+    document.getElementById("progress-fill").style.width = pct + "%";
+    document.getElementById("progress-label").textContent = done + " of " + CONFIG.videos.length + " videos completed";
+    if (done === CONFIG.videos.length) setTimeout(showCompletion, 800);
+  }
+
+  function showCompletion() {
+    document.getElementById("main").style.display = "none";
+    document.getElementById("completion").style.display = "block";
+    document.getElementById("completion-msg").innerHTML =
+      `<strong>${currentCreator}</strong> — you've watched all four training videos.<br>We'll be in touch with your first brief soon.`;
+  }
+
+  // ── Persistence ────────────────────────────────────
+  function saveProgress() {
+    localStorage.setItem("ugc_progress_" + currentCreator, JSON.stringify(completionState));
+  }
+
+  function sendTracking(videoTitle) {
+    if (!CONFIG.trackingUrl) return;
+    fetch(CONFIG.trackingUrl, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        creator: currentCreator,
+        video: videoTitle,
+        completedAt: new Date().toISOString(),
+        allCompleted: CONFIG.videos.every(v => completionState[v.title])
+      })
+    }).catch(() => {});
+  }
+</script>
+</body>
+</html>
