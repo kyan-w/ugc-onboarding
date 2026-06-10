@@ -792,15 +792,15 @@
     } else {
       inspo.classList.add("inspo-locked");
     }
-    if (done === CONFIG.videos.length) setTimeout(showCompletion, 800);
-  }
-
-  function showCompletion() {
-    const banner = document.getElementById("completion-banner");
-    banner.style.display = "flex";
-    document.getElementById("completion-msg").textContent =
-      currentCreator + " — you've watched all four training videos. We'll be in touch with your first brief soon.";
-    banner.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (done === CONFIG.videos.length) {
+      const banner = document.getElementById("completion-banner");
+      if (banner) {
+        banner.style.cssText = "display:flex!important;";
+        document.getElementById("completion-msg").textContent =
+          currentCreator + " — you've watched all four training videos. We'll be in touch with your first brief soon.";
+        setTimeout(() => banner.scrollIntoView({ behavior: "smooth", block: "start" }), 400);
+      }
+    }
   }
 
   // ── Persistence ────────────────────────────────────
