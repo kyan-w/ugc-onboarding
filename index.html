@@ -722,9 +722,13 @@
     const pct  = Math.round((done / CONFIG.videos.length) * 100);
     document.getElementById("progress-fill").style.width = pct + "%";
     document.getElementById("progress-label").textContent = done + " of " + CONFIG.videos.length + " videos completed";
-    // Unlock inspo library after video 4
+    // Show inspo locked or unlocked depending on video 4 completion
+    const inspo = document.getElementById("inspo-section");
+    inspo.style.display = "block";
     if (completionState[CONFIG.videos[CONFIG.videos.length - 1].title]) {
-      document.getElementById("inspo-section").style.display = "block";
+      inspo.classList.remove("inspo-locked");
+    } else {
+      inspo.classList.add("inspo-locked");
     }
     if (done === CONFIG.videos.length) setTimeout(showCompletion, 800);
   }
