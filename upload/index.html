@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UGC Video Upload</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f0f13;
+      color: #e8e8f0;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      padding: 40px 24px 32px;
+      text-align: center;
+      border-bottom: 1px solid #ffffff18;
+    }
+    header .logo {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #7c83ff;
+      margin-bottom: 10px;
+    }
+    header h1 {
+      font-size: clamp(24px, 4vw, 38px);
+      font-weight: 700;
+      background: linear-gradient(90deg, #fff 0%, #a0a8ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    header p { margin-top: 10px; color: #9090b0; font-size: 15px; }
+
+    /* Invalid link */
+    #invalid {
+      display: none;
+      max-width: 460px;
+      margin: 80px auto;
+      padding: 0 24px;
+      text-align: center;
+    }
+    .invalid-icon { font-size: 48px; margin-bottom: 20px; }
+    #invalid h2 { font-size: 22px; margin-bottom: 10px; }
+    #invalid p  { color: #9090b0; font-size: 15px; line-height: 1.6; }
+
+    /* Main */
+    #main {
+      display: none;
+      max-width: 600px;
+      margin: 48px auto;
+      padding: 0 24px 80px;
+    }
+
+    .welcome-bar {
+      background: #1c1c2e;
+      border: 1px solid #ffffff12;
+      border-radius: 12px;
+      padding: 16px 22px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+    .avatar {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #7c83ff, #5b63d3);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 17px; flex-shrink: 0;
+    }
+    .welcome-bar .info strong { display: block; font-size: 15px; }
+    .welcome-bar .info span   { font-size: 13px; color: #9090b0; }
+
+    /* Auth button */
+    #auth-section {
+      text-align: center;
+      padding: 40px 24px;
+      background: #1c1c2e;
+      border: 1px solid #ffffff12;
+      border-radius: 16px;
+      margin-bottom: 24px;
+    }
+    #auth-section p { color: #9090b0; font-size: 14px; margin-bottom: 20px; line-height: 1.6; }
+    #auth-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: #fff;
+      color: #333;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 24px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .2s;
+    }
+    #auth-btn:hover { opacity: .88; }
+    #auth-btn img { width: 20px; height: 20px; }
+
+    /* Drop zone */
+    #upload-section { display: none; }
+
+    .drop-zone {
+      border: 2px dashed #ffffff25;
+      border-radius: 16px;
+      padding: 60px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      background: #1c1c2e;
+      position: relative;
+    }
+    .drop-zone.dragover {
+      border-color: #7c83ff;
+      background: #7c83ff10;
+    }
+    .drop-zone.has-file {
+      border-color: #4ade80;
+      background: #4ade8008;
+    }
+    .drop-icon { font-size: 48px; margin-bottom: 16px; }
+    .drop-zone h2 { font-size: 18px; margin-bottom: 8px; }
+    .drop-zone p  { color: #9090b0; font-size: 14px; }
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .file-info {
+      display: none;
+      margin-top: 20px;
+      background: #1c1c2e;
+      border: 1px solid #ffffff12;
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: none;
+      align-items: center;
+      gap: 14px;
+    }
+    .file-info .file-icon { font-size: 28px; flex-shrink: 0; }
+    .file-info .file-details { flex: 1; }
+    .file-info .file-details strong { display: block; font-size: 14px; word-break: break-all; }
+    .file-info .file-details span   { font-size: 12px; color: #9090b0; }
+    .file-remove {
+      background: none; border: none; color: #9090b0;
+      cursor: pointer; font-size: 18px; padding: 4px;
+    }
+    .file-remove:hover { color: #ff6b6b; }
+
+    /* Upload button */
+    #upload-btn {
+      display: none;
+      width: 100%;
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #7c83ff, #5b63d3);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .2s;
+    }
+    #upload-btn:hover   { opacity: .88; }
+    #upload-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* Progress */
+    #progress-section {
+      display: none;
+      margin-top: 24px;
+    }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #9090b0;
+      margin-bottom: 8px;
+    }
+    .progress-label strong { color: #e8e8f0; }
+    .progress-track {
+      background: #1c1c2e;
+      border-radius: 8px;
+      height: 10px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #7c83ff, #5b63d3);
+      transition: width .3s ease;
+      width: 0%;
+    }
+    .progress-status { margin-top: 10px; font-size: 13px; color: #9090b0; text-align: center; }
+
+    /* Success */
+    #success-section {
+      display: none;
+      text-align: center;
+      padding: 48px 24px;
+      background: linear-gradient(135deg, #0d2818, #14532d);
+      border: 1px solid #4ade8040;
+      border-radius: 16px;
+      margin-top: 24px;
+      animation: fadeIn .5s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+    #success-section .check { font-size: 56px; margin-bottom: 16px; }
+    #success-section h2 { font-size: 24px; color: #4ade80; margin-bottom: 10px; }
+    #success-section p  { color: #86efac; font-size: 15px; line-height: 1.6; }
+    #upload-another {
+      margin-top: 24px;
+      padding: 12px 28px;
+      border-radius: 10px;
+      border: 1px solid #4ade8040;
+      background: #4ade8015;
+      color: #4ade80;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    #upload-another:hover { background: #4ade8025; }
+
+    /* Error */
+    .error-msg {
+      display: none;
+      margin-top: 14px;
+      padding: 12px 16px;
+      background: #ff4d4d15;
+      border: 1px solid #ff4d4d30;
+      border-radius: 10px;
+      font-size: 13px;
+      color: #ff9999;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">UGC Creator Program</div>
+  <h1>Video Upload Portal</h1>
+  <p>Submit your content directly — fast and secure.</p>
+</header>
+
+<div id="invalid">
+  <div class="invalid-icon">🔗</div>
+  <h2>Invalid Link</h2>
+  <p>This link doesn't have a creator name attached.<br>Please use the personal link sent to you.</p>
+</div>
+
+<div id="main">
+  <div class="welcome-bar">
+    <div class="avatar" id="avatar-initial">?</div>
+    <div class="info">
+      <strong id="greeting-name">Hello!</strong>
+      <span>Upload your video below — it goes straight to us.</span>
+    </div>
+  </div>
+
+  <!-- Step 1: Auth -->
+  <div id="auth-section">
+    <p>Click below to securely connect your Google account.<br>This lets us save your video directly — you won't need to share any links.</p>
+    <button id="auth-btn" onclick="signIn()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+      Continue with Google
+    </button>
+  </div>
+
+  <!-- Step 2: Upload -->
+  <div id="upload-section">
+    <div class="drop-zone" id="drop-zone">
+      <input type="file" id="file-input" accept="video/*" />
+      <div class="drop-icon">🎬</div>
+      <h2>Drop your video here</h2>
+      <p>or click to browse — MP4, MOV, any video format</p>
+    </div>
+
+    <div class="file-info" id="file-info">
+      <div class="file-icon">🎥</div>
+      <div class="file-details">
+        <strong id="file-name">filename.mp4</strong>
+        <span id="file-size">0 MB</span>
+      </div>
+      <button class="file-remove" onclick="clearFile()" title="Remove">✕</button>
+    </div>
+
+    <div class="error-msg" id="error-msg"></div>
+
+    <button id="upload-btn" onclick="startUpload()">Upload Video →</button>
+
+    <div id="progress-section">
+      <div class="progress-label">
+        <strong id="progress-text">Uploading...</strong>
+        <span id="progress-pct">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <div class="progress-status" id="progress-status">Starting upload...</div>
+    </div>
+
+    <div id="success-section">
+      <div class="check">✅</div>
+      <h2>Video Received!</h2>
+      <p id="success-msg">Your video has been uploaded successfully.<br>We'll review it and be in touch soon.</p>
+      <button id="upload-another" onclick="resetUpload()">Upload Another Video</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Configuration ── -->
+<script>
+  const CONFIG = {
+    // Paste your Google OAuth Client ID here
+    clientId: "YOUR_CLIENT_ID_HERE.apps.googleusercontent.com",
+
+    // The name of the parent folder in your Google Drive
+    // All creator subfolders will be created inside this
+    parentFolderName: "UGC Uploads"
+  };
+</script>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+  // ── State ──
+  const params        = new URLSearchParams(location.search);
+  const currentCreator = (params.get("creator") || "").trim();
+  let   tokenClient;
+  let   accessToken   = null;
+  let   selectedFile  = null;
+
+  // ── Boot ──
+  if (!currentCreator) {
+    document.getElementById("invalid").style.display = "block";
+  } else {
+    document.getElementById("main").style.display    = "block";
+    document.getElementById("greeting-name").textContent = "Hi, " + currentCreator + "!";
+    document.getElementById("avatar-initial").textContent = currentCreator.charAt(0).toUpperCase();
+    initDropZone();
+  }
+
+  // ── Google Sign-In ──
+  function signIn() {
+    if (!tokenClient) {
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CONFIG.clientId,
+        scope: "https://www.googleapis.com/auth/drive.file",
+        callback: (resp) => {
+          if (resp.error) { showError("Sign-in failed. Please try again."); return; }
+          accessToken = resp.access_token;
+          document.getElementById("auth-section").style.display  = "none";
+          document.getElementById("upload-section").style.display = "block";
+        }
+      });
+    }
+    tokenClient.requestAccessToken({ prompt: "consent" });
+  }
+
+  // ── Drop zone ──
+  function initDropZone() {
+    const zone  = document.getElementById("drop-zone");
+    const input = document.getElementById("file-input");
+
+    zone.addEventListener("dragover",  (e) => { e.preventDefault(); zone.classList.add("dragover"); });
+    zone.addEventListener("dragleave", ()  => zone.classList.remove("dragover"));
+    zone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      zone.classList.remove("dragover");
+      if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+    });
+    input.addEventListener("change", () => { if (input.files[0]) setFile(input.files[0]); });
+  }
+
+  function setFile(file) {
+    selectedFile = file;
+    document.getElementById("drop-zone").classList.add("has-file");
+    const info = document.getElementById("file-info");
+    info.style.display = "flex";
+    document.getElementById("file-name").textContent = file.name;
+    document.getElementById("file-size").textContent = (file.size / 1024 / 1024).toFixed(1) + " MB";
+    document.getElementById("upload-btn").style.display = "block";
+    hideError();
+  }
+
+  function clearFile() {
+    selectedFile = null;
+    document.getElementById("drop-zone").classList.remove("has-file");
+    document.getElementById("file-info").style.display  = "none";
+    document.getElementById("upload-btn").style.display = "none";
+    document.getElementById("file-input").value = "";
+    hideError();
+  }
+
+  // ── Upload ──
+  async function startUpload() {
+    if (!selectedFile || !accessToken) return;
+    document.getElementById("upload-btn").disabled    = true;
+    document.getElementById("progress-section").style.display = "block";
+    hideError();
+
+    try {
+      setStatus("Finding your folder...");
+      const parentId  = await getOrCreateFolder(CONFIG.parentFolderName, null);
+      const creatorId = await getOrCreateFolder(currentCreator, parentId);
+
+      setStatus("Starting upload...");
+      await resumableUpload(selectedFile, creatorId);
+
+      // Success
+      document.getElementById("progress-section").style.display = "none";
+      document.getElementById("success-section").style.display  = "block";
+      document.getElementById("success-msg").innerHTML =
+        `<strong>${currentCreator}</strong> — your video has been uploaded successfully.<br>We'll review it and be in touch soon.`;
+
+    } catch (err) {
+      showError("Upload failed: " + err.message + ". Please try again.");
+      document.getElementById("upload-btn").disabled = false;
+      document.getElementById("progress-section").style.display = "none";
+    }
+  }
+
+  // ── Google Drive helpers ──
+  async function getOrCreateFolder(name, parentId) {
+    // Search for existing folder
+    let query = `mimeType='application/vnd.google-apps.folder' and name='${name}' and trashed=false`;
+    if (parentId) query += ` and '${parentId}' in parents`;
+
+    const search = await gfetch(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id,name)`);
+    if (search.files && search.files.length > 0) return search.files[0].id;
+
+    // Create folder
+    const created = await gfetch("https://www.googleapis.com/drive/v3/files", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        mimeType: "application/vnd.google-apps.folder",
+        parents: parentId ? [parentId] : []
+      })
+    });
+    return created.id;
+  }
+
+  async function resumableUpload(file, folderId) {
+    const CHUNK = 5 * 1024 * 1024; // 5MB chunks
+
+    // Start resumable session
+    const sessionRes = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + accessToken,
+        "Content-Type": "application/json",
+        "X-Upload-Content-Type": file.type || "video/mp4",
+        "X-Upload-Content-Length": file.size
+      },
+      body: JSON.stringify({
+        name: file.name,
+        parents: [folderId]
+      })
+    });
+
+    if (!sessionRes.ok) throw new Error("Could not start upload session");
+    const uploadUrl = sessionRes.headers.get("Location");
+    if (!uploadUrl) throw new Error("No upload URL returned");
+
+    // Upload in chunks
+    let offset = 0;
+    while (offset < file.size) {
+      const end   = Math.min(offset + CHUNK, file.size);
+      const chunk = file.slice(offset, end);
+
+      setProgress(Math.round((offset / file.size) * 100));
+      setStatus(`Uploading... ${formatBytes(offset)} of ${formatBytes(file.size)}`);
+
+      const res = await fetch(uploadUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Range": `bytes ${offset}-${end - 1}/${file.size}`,
+          "Content-Type": file.type || "video/mp4"
+        },
+        body: chunk
+      });
+
+      if (res.status === 308) {
+        // Continue — get next expected byte
+        const range = res.headers.get("Range");
+        offset = range ? parseInt(range.split("-")[1]) + 1 : end;
+      } else if (res.ok || res.status === 200 || res.status === 201) {
+        setProgress(100);
+        setStatus("Upload complete!");
+        break;
+      } else {
+        throw new Error(`Upload error at chunk (status ${res.status})`);
+      }
+    }
+  }
+
+  async function gfetch(url, opts = {}) {
+    const res = await fetch(url, {
+      ...opts,
+      headers: { "Authorization": "Bearer " + accessToken, ...(opts.headers || {}) }
+    });
+    if (!res.ok) throw new Error(`API error ${res.status}`);
+    return res.json();
+  }
+
+  // ── UI helpers ──
+  function setProgress(pct) {
+    document.getElementById("progress-fill").style.width = pct + "%";
+    document.getElementById("progress-pct").textContent  = pct + "%";
+  }
+  function setStatus(msg) {
+    document.getElementById("progress-status").textContent = msg;
+    document.getElementById("progress-text").textContent   = msg;
+  }
+  function formatBytes(b) {
+    return b > 1024 * 1024 ? (b / 1024 / 1024).toFixed(1) + " MB" : (b / 1024).toFixed(0) + " KB";
+  }
+  function showError(msg) {
+    const el = document.getElementById("error-msg");
+    el.textContent   = msg;
+    el.style.display = "block";
+  }
+  function hideError() {
+    document.getElementById("error-msg").style.display = "none";
+  }
+  function resetUpload() {
+    clearFile();
+    document.getElementById("success-section").style.display  = "none";
+    document.getElementById("progress-section").style.display = "none";
+    document.getElementById("upload-btn").disabled = false;
+  }
+</script>
+</body>
+</html>
