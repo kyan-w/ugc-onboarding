@@ -5,20 +5,87 @@
 
 const SHEET_NAME = "Onboarding Tracker";
 
+// Canonical name + email for each creator
+const CREATORS = {
+  "Kristen Stockman": "kristenstockman3@gmail.com",
+  "Marco Rivera":     "Ezepargolf@gmail.com",
+  "John Bair":        "Mrjohnbair@gmail.com",
+  "James Schneider":  "info@workwiththeschneiders.com",
+  "Christian B":      "christianbarto2@gmail.com",
+  "D'Ondre Stockman": "djstockman3@gmail.com",
+  "Jaden Melgoza":    "jadenmugc@gmail.com",
+  "Ryan Kennedy":     "rskennedy04@gmail.com",
+  "Calvin Ha":        "Calvin.ha@outlook.com"
+};
+
+// Merge aliases → canonical name
+const NAME_MAP = {
+  "James S": "James Schneider"
+};
+
 function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
     logCompletion(data.creator, data.video, data.completedAt, data.allCompleted);
   } catch(err) {
-    // silent
+    logCompletion("ERROR", err.toString(), new Date().toISOString(), false);
   }
   return ContentService
     .createTextOutput(JSON.stringify({ status: "ok" }))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
+// Visit this URL in your browser to test the script is working
+function doGet(e) {
+  logCompletion("TEST USER", "Test Video", new Date().toISOString(), false);
+  return ContentService
+    .createTextOutput("✅ Script is working! Check your Onboarding Tracker sheet.")
+    .setMimeType(ContentService.MimeType.TEXT);
+}
+
+function testManually() {
+  logCompletion("Test Creator", "Video 1 — Program Overview", new Date().toISOString(), false);
+  Logger.log("Done — check the Onboarding Tracker sheet in Google Drive.");
+}
+
+function getOrCreateSpreadsheet() {
+  const files = DriveApp.getFilesByName("Onboarding Tracker");
+  if (files.hasNext()) {
+    return SpreadsheetApp.open(files.next());
+  }
+  return SpreadsheetApp.create("Onboarding Tracker");
+}
+
+function getOrCreateCreatorFolder(creatorName) {
+  // Resolve alias to canonical name
+  const canonical = NAME_MAP[creatorName] || creatorName;
+
+  let parentFolder;
+  const existing = DriveApp.getFoldersByName("UGC Uploads");
+  if (existing.hasNext()) {
+    parentFolder = existing.next();
+  } else {
+    parentFolder = DriveApp.createFolder("UGC Uploads");
+  }
+
+  let folder;
+  const subs = parentFolder.getFoldersByName(canonical);
+  if (subs.hasNext()) {
+    folder = subs.next();
+  } else {
+    folder = parentFolder.createFolder(canonical);
+    // Share with creator if email is known
+    const email = CREATORS[canonical];
+    if (email) {
+      folder.addEditor(email);
+    }
+  }
+  return folder;
+}
+
 function logCompletion(creator, video, completedAt, allCompleted) {
-  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  getOrCreateCreatorFolder(creator);
+  const ss    = getOrCreateSpreadsheet();
   let sheet   = ss.getSheetByName(SHEET_NAME);
 
   // Create sheet + headers on first run
@@ -55,7 +122,7 @@ function logCompletion(creator, video, completedAt, allCompleted) {
 
 // ── Dashboard summary (run manually to refresh) ──────────
 function buildDashboard() {
-  const ss         = SpreadsheetApp.getActiveSpreadsheet();
+  const ss         = getOrCreateSpreadsheet();
   const logSheet   = ss.getSheetByName(SHEET_NAME);
   if (!logSheet) { Logger.log("No data yet."); return; }
 
@@ -97,4 +164,13 @@ function buildDashboard() {
   dash.autoResizeColumns(1, 4);
 
   Logger.log("Dashboard updated.");
+}
+
+// ── Run this once to create all creator folders in Drive ──
+function createCreatorFolders() {
+  Object.keys(CREATORS).forEach(name => {
+    getOrCreateCreatorFolder(name);
+    Logger.log("Created/verified folder for: " + name + " → shared with " + CREATORS[name]);
+  });
+  Logger.log("Done! Check Google Drive → UGC Uploads.");
 }
